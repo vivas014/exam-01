@@ -1,11 +1,88 @@
 ---
-title: "quarto-website-template"
+title: "Exam-01"
+author: "Pablo Vivas"
+date: "`r Sys.Date()`"
+format:
+  html:
+    toc: true
+    toc-location: left
+    toc-depth: 2
+    code-copy: true
+    code-fold: true
+    highlight-style: nord
+execute:
+  warning: false
+  error: false
+  echo: true
+# bibliography: "assets/assignment-04.bib"
+# csl: "assets/apa.csl"
+theme: simplex
 ---
 
-This is a Quarto website.
+```{r}
+#| label: set-up
+#| echo: false
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+library(gt)
+library(skimr)
+library(tidyverse)
+```
+
+# Question 1
+
+First, we read the data and take a look at how does it look.
 
 ```{r}
-1 + 1
+#| label: tbl-read-data
+#| tbl-cap: Sample of (n=10) observations of the World data 
+
+world = read_csv("data/world-3.csv")
+
+world |> 
+  sample_n(10) |> 
+  arrange(country) |> 
+  gt() |> 
+  fmt_number(
+    columns = c(6, 10, 11, 12),
+    decimals = 2
+  )
 ```
+
+Then, we make a description of all the numeric values.
+
+```{r}
+#| label: tbl-desc-data
+#| tbl-cap: Summary of numeric variables for the World data 
+
+world |> 
+  select(where(is.numeric)) |> 
+  skim() |> 
+  select(-1) |> 
+  gt() |> 
+  fmt_number(
+    columns = 3:10,
+    decimals = 2
+  ) |> 
+  cols_label(
+    skim_variable = "variable",
+    n_missing = "missing",
+    numeric.mean = "mean",
+    numeric.sd = "std",
+    numeric.p0 = "p0",
+    numeric.p25 = "p25",
+    numeric.p50 = "p50",
+    numeric.p75 = "p75",
+    numeric.p100 = "p100",
+    numeric.hist = "histogram"
+  ) |> 
+  cols_align(
+    columns = -1,
+    align = "center"
+  )
+```
+
+We see from @tbl-desc-data that some of the variables have missing data, specifically, the `literacym` variable has complete rate of 78%. Also, the standard deviation from each variable is in a different scale, ranging from 0.62 units in `gdp` to 38.08 units in `babymort`. This makes sense because some variables are in a log-scale.
+
+# Question 2
+
+# Question 3
