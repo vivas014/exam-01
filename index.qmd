@@ -23,12 +23,16 @@ theme: simplex
 #| label: set-up
 #| echo: false
 
+library(broom)
+library(cowplot)
 library(gt)
 library(skimr)
 library(tidyverse)
 ```
 
 # Question 1
+
+## Pre-work
 
 First, we read the data and take a look at how does it look.
 
@@ -82,6 +86,56 @@ world |>
 ```
 
 We see from @tbl-desc-data that some of the variables have missing data, specifically, the `literacym` variable has complete rate of 78%. Also, the standard deviation from each variable is in a different scale, ranging from 0.62 units in `gdp` to 38.08 units in `babymort`. This makes sense because some variables are in a log-scale.
+
+::: {.callout-note}
+Given this scenario, we would prefer to perform pca with the correlation matrix.
+:::
+
+## Real work
+
+### a)
+
+We perform two principal component analysis using: a) the covariance matrix and b) the correlation matrix.
+
+```{r}
+#| label: pca-perform
+
+# get complete cases
+world_complete = world |> 
+  drop_na()
+
+# for the covariance matrix
+pca_cov = world_complete |> 
+  select(-c(1,2)) |> 
+  prcomp()
+
+# for the correlation matrix
+pca_cor = world_complete |> 
+  select(-c(1,2)) |> 
+  prcomp(scale = TRUE)
+
+# matrix with loadings
+loadings = bind_rows(
+  pca_cov |> 
+  tidy(matrix = "rotation") |> 
+  mutate(matrix = factor("covariance")),
+  pca_cor |> 
+  tidy(matrix = "rotation") |> 
+  mutate(matrix = factor("correlation"))
+)
+```
+
+### b)
+
+### c)
+
+### d)
+
+```{r}
+#| label: fig-pca-01
+world_complete = pca_cor |>
+  augment(world_complete)
+```
 
 # Question 2
 
