@@ -10,6 +10,7 @@ format:
     code-copy: true
     code-fold: true
     highlight-style: nord
+  docx: default
 execute:
   warning: false
   error: false
@@ -124,6 +125,16 @@ loadings = bind_rows(
   mutate(matrix = factor("correlation"))
 )
 ```
+
+We plot the differences for the first two pcs using each method.
+
+```{r}
+loadings |> 
+  filter(PC == 1) |> 
+  ggplot() |> 
+  geom_point(aes())
+```
+
 
 ### b)
 
