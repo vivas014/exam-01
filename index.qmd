@@ -28,6 +28,7 @@ library(broom)
 library(cowplot)
 library(gt)
 library(skimr)
+library(patchwork)
 library(tidyverse)
 ```
 
@@ -128,11 +129,111 @@ loadings = bind_rows(
 
 We plot the differences for the first two pcs using each method.
 
+Option 1:
+
 ```{r}
+#| label: fig-plot-01
+#| fig-cap: Representations of the loadings
+#| fig-width: 9
+#| fig-height: 5
+
+plot_01 = tibble(cor = pca_cor$rotation[,1], cov = pca_cov$rotation[,1]) 
+plot_02 = tibble(cor = pca_cor$rotation[,2], cov = pca_cov$rotation[,2]) 
+
+p01 = plot_01 |> 
+  ggplot() +
+  geom_point(aes(x = cor, y = cov), size = 3) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", size = 1.3) +
+  xlim(c(-0.65, 0.65)) +
+  ylim(c(-0.65, 0.65)) +
+  theme_bw() +
+  xlab("PC1 (cor)") +
+  ylab("PC1 (cov)")
+
+p02 = plot_02 |> 
+  ggplot() +
+  geom_point(aes(x = cor, y = cov), size = 3) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", size = 1.3) +
+  xlim(c(-0.65, 0.65)) +
+  ylim(c(-0.65, 0.65)) +
+  theme_bw() +
+  xlab("PC2 (cor)") +
+  ylab("PC2 (cov)")
+
+p01 | p02
+```
+
+Option 2:
+
+```{r}
+#| label: fig-plot-02
+#| fig-cap: Representations of the loadings
+#| fig-width: 9
+#| fig-height: 5
+
 loadings |> 
-  filter(PC == 1) |> 
-  ggplot() |> 
-  geom_point(aes())
+  filter(PC == c(1,2)) |> 
+  ggplot() +
+  geom_density(aes(x = value, fill = matrix, color = matrix), alpha = 0.6) +
+  facet_wrap(vars(PC), nrow = 1) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  scale_color_brewer(palette = "Pastel1") +
+  scale_fill_brewer(palette = "Pastel1")
+```
+
+Option 3:
+
+```{r}
+#| label: fig-plot-03
+#| fig-cap: Representations of the loadings
+#| fig-width: 9
+#| fig-height: 5
+
+loadings |> 
+  filter(PC == c(1,2)) |> 
+  ggplot() +
+  geom_boxplot(aes(x = value, y = matrix, fill = matrix, color = matrix), alpha = 0.6) +
+  facet_wrap(vars(PC), nrow = 1) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  scale_color_brewer(palette = "Accent") +
+  scale_fill_brewer(palette = "Accent")
+```
+
+Option 4:
+
+```{r}
+#| label: fig-plot-04
+#| fig-cap: Representations of the loadings
+#| fig-width: 9
+#| fig-height: 5
+
+p03 = pca_cov %>%
+  tidy(matrix = "eigenvalues") %>%
+  ggplot(aes(PC, percent)) +
+  geom_col(fill = "#56B4E9", alpha = 0.8) +
+  xlab("PCA (cov)") +
+  scale_x_continuous(breaks = 1:9) +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    expand = expansion(mult = c(0, 0.01))
+  ) +
+  theme_minimal_hgrid(12)
+
+p04 = pca_cor %>%
+  tidy(matrix = "eigenvalues") %>%
+  ggplot(aes(PC, percent)) +
+  xlab("PCA (cor)") +
+  geom_col(fill = "#56B4E9", alpha = 0.8) +
+  scale_x_continuous(breaks = 1:9) +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    expand = expansion(mult = c(0, 0.01))
+  ) +
+  theme_minimal_hgrid(12)
+
+p03 | p04
 ```
 
 
