@@ -214,23 +214,25 @@ p03 = pca_cov %>%
   ggplot(aes(PC, percent)) +
   geom_col(fill = "#56B4E9", alpha = 0.8) +
   xlab("PCA (cov)") +
+  ylim(c(0, 1)) +
   scale_x_continuous(breaks = 1:9) +
-  scale_y_continuous(
-    labels = scales::percent_format(),
-    expand = expansion(mult = c(0, 0.01))
-  ) +
+  # scale_y_continuous(
+  #     labels = scales::percent_format(),
+  #     expand = expansion(mult = c(0, 0.01))
+  #     ) +
   theme_minimal_hgrid(12)
 
 p04 = pca_cor %>%
   tidy(matrix = "eigenvalues") %>%
   ggplot(aes(PC, percent)) +
-  xlab("PCA (cor)") +
   geom_col(fill = "#56B4E9", alpha = 0.8) +
+  xlab("PCA (cov)") +
+  ylim(c(0, 1)) +
   scale_x_continuous(breaks = 1:9) +
-  scale_y_continuous(
-    labels = scales::percent_format(),
-    expand = expansion(mult = c(0, 0.01))
-  ) +
+  # scale_y_continuous(
+  #     labels = scales::percent_format(),
+  #     expand = expansion(mult = c(0, 0.01))
+  #     ) +
   theme_minimal_hgrid(12)
 
 p03 | p04
