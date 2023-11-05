@@ -238,8 +238,45 @@ Countries that would receive high scores in this pc will be those. Countries tha
 
 world_complete = pca_cor |>
   augment(world_complete)
+
+world_complete |> 
+  ggplot() +
+  geom_point(aes(x = .fittedPC1, y = .fittedPC2, color = region), size = 3) +
+  xlab("PC1") +
+  ylab("PC2") +
+  scale_color_brewer(palette = "Dark2") +
+  theme_classic()
+```
+
+### e)
+
+```{r}
+pca_cov$rotation[,1] 
 ```
 
 # Question 2
+
+We read the data
+
+```{r}
+wais = matrix(c(1.00, .37, .34, .40, .27, .59, .09, .25, .27, .22, .26,
+ .37, 1.00, .27, .25, .38, .46, .10, .26, .29, .22, .24,
+ .34, .27, 1.00, .36, .28, .33, .18, .32, .38, .29, .30,
+ .40, .25, .36, 1.00, .22, .35, .08, .31, .26, .25, .20,
+ .27, .38, .28, .22, 1.00, .29, .16, .14, .18, .15, .22,
+ .59, .46, .33, .35, .29, 1.00, .08, .27, .24, .28, .26,
+ .09, .10, .18, .08, .16, .08, 1.00, .19, .13, .22, .17,
+ .25, .26, .32, .31, .14, .27, .19, 1.00, .36, .36, .40,
+ .27, .29, .38, .26, .18, .24, .13, .36, 1.00, .30, .60, 
+ .22, .22, .29, .25, .15, .28, .22, .36, .30, 1.00, .25,
+ .26, .24, .30, .20, .22, .26, .17, .40, .60, .25, 1.00), 
+ncol=11, byrow=T)
+
+rownames(wais) = colnames(wais) = c("Information", "Comprehension", 
+"Arithmetic", "Similarities", "Digit Span", "Vocabulary", "Digit Symbol", 
+"Picture Completion", "Block Design", "Picture Arrangement", "Object 
+Assembly") 
+```
+
 
 # Question 3
