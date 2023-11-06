@@ -6,7 +6,7 @@ format:
   html:
     toc: true
     toc-location: left
-    toc-depth: 2
+    toc-depth: 1
     code-copy: true
     code-fold: true
     highlight-style: nord
@@ -278,5 +278,31 @@ rownames(wais) = colnames(wais) = c("Information", "Comprehension",
 Assembly") 
 ```
 
+### a) 
 
+We perform a pca with the correlation matrix
+
+```{r}
+wais_pc = princomp(covmat = wais)   
+```
+
+```{r}
+#| label: fig-scree-plot
+#| fig-cap: Scree plot
+#| fig-width: 9
+#| fig-height: 5
+
+wais_pc |> 
+  tidy(matrix = "eigenvalues") |> 
+  mutate(lambda = std.dev * std.dev) |> 
+  ggplot(aes(PC, lambda)) +
+  geom_col(fill = "#56B4E9", alpha = 0.8) +
+  geom_abline(slope =  0, intercept = 1, linetype = "dashed", color = "red") +
+  xlab("PCA") +
+  scale_x_continuous(breaks = 1:13) +
+  scale_y_continuous(
+       expand = expansion(mult = c(0, 0.01))
+    ) +
+  theme_minimal_hgrid(12)
+```
 # Question 3
