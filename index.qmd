@@ -87,10 +87,10 @@ world |>
   )
 ```
 
-We see from @tbl-desc-data that some of the variables have missing data, specifically, the `literacym` variable has complete rate of 78%. Also, the standard deviation from each variable is in a different scale, ranging from 0.62 units in `gdp` to 38.08 units in `babymort`. This makes sense because some variables are in a log-scale.
+We see from @tbl-desc-data that some of the variables have missing data, specifically, the `literacym` and the `literacyf` variables have complete rate of 78%. Also, the standard deviation from each variable is in a different scale, ranging from 0.62 units in `gdp` to 38.08 units in `babymort`. This makes sense because some variables are in a log-scale.
 
 ::: callout-note
-Given this scenario, we would prefer to perform pca with the correlation matrix.
+Given this scenario of differences between scales and variability, we would prefer to perform the principal component analysis with the correlation matrix instead of the covariance matrix.
 :::
 
 ### a)
@@ -115,7 +115,7 @@ pca_cor = world_complete |>
   prcomp(scale = TRUE)
 ```
 
-We plot the differences for the first two pca's using each method.
+We plot the differences for the two analysis using each method. The plots will contain the first two principal components.
 
 ```{r}
 #| label: fig-plot-comparison
@@ -160,7 +160,7 @@ To investigate the number of necessary principal components to adequately descri
 
 ```{r}
 #| label: fig-scree-plot
-#| fig-cap: Scree plot
+#| fig-cap: Scree plot and Kaiser rule (dotted red line)
 #| fig-width: 9
 #| fig-height: 5
 
@@ -178,7 +178,7 @@ pca_cor |>
   theme_minimal_hgrid(12)
 ```
 
-The scree plot suggests that we need to extract two principal components, because at pca number 2 we notice the "elbow" in the amount of variance explained. After this component, the remainder pcas account for a negligible amount of variance. Plus, the Kaiser rule also suggest that we need to extract two principal components because only the first two have an eigenvalue greater than one.
+The scree plot suggests that we need to extract two principal components, because at pca number 3 we notice the "elbow" in the amount of variance explained. After the second component, the remainder principal components account for a negligible amount of variance. Plus, the Kaiser rule also suggest that we need to extract two principal components because only the first two have an eigenvalue greater than one.
 
 2.  Proportion of explained variance.
 
@@ -193,6 +193,10 @@ pca_cor |>
          .keep = "unused") |> 
   select(-std.dev) |> 
   gt() |> 
+  cols_width(
+    per ~ px(120),
+    per.cum ~ px(120)
+  ) |>
   cols_label(
     per = "Percentage",
     per.cum = "Cummulative"
@@ -203,27 +207,50 @@ pca_cor |>
   )
 ```
 
-Based on @tbl-percentage, the analysis indicates that two principal components explain over a 80% of the variance. Even thought is subjective, I believe that this percentage is good enough for this context and that two components explaining over a 80% in this analysis with 13 variables is acceptable.
+Based on @tbl-percentage, the analysis indicates that two principal components explain over a 80% of the variance. Even thought is subjective, I believe that this percentage is good enough for this context. Also, two components explaining over a 80% in this analysis with 13 variables is acceptable/awesome 😁.
 
 ::: callout-note
-The three methods suggest that 2 principal components appear to be necessary to describe adequately the variability in these variables. The rest of the analysis will be done using two principal components.
+The three methods (scree-plot, Kaiser rule and proportion of variance explained) suggest that 2 principal components appear to be necessary to describe adequately the variability in these variables. The rest of the analysis will be done using two principal components.
 :::
 
 ### c)
 
-Principal Component 1:
+In order to make interpretations of the two principal components, we will take a look at the loadings:
 
-This component seems to be associated with general development indicators. High positive scores on PC1 correlate with high GDP, high literacy rates (for both males and females), and higher life expectancy for both males and females. This suggests that countries with higher scores on PC1 are likely to be more developed, with stronger economies and better health and education systems. On the other hand, countries with low scores on PC1 exhibit higher rates of infant mortality (babymort), higher AIDS rates (aidsr), and higher birth rates (birthr). These are typical of less developed countries where healthcare and education systems are weaker and economic activity is lower.
+```{r}
+#| label: tbl-loadings-cor
+#| tbl-cap: Loading of the first two principal components
 
-Principal Component 2:
+data_p02 |> 
+  gt() |> 
+  cols_width(
+    everything() ~ px(150)
+  ) |> 
+  cols_align(
+    columns = -1,
+    align = "center"
+  ) |> 
+  fmt_number(
+    columns = 2:3,
+    decimals = 2
+  ) |> 
+  cols_label(
+    var = "Variable",
+    pca_1 = "PC1",
+    pca_2 = "PC2"
+  )
+```
+Based on @tbl-loadings-cor and its graphical representation in @fig-plot-comparison (right plot) we can interpret each principal component as follows:
 
-This component captures more demographic variables and aspects of population dynamics. Notably, countries with high scores on PC2 have higher death rates (deathr) and possibly lower population increases (popincr), indicating countries that may be experiencing either low birth rates, high mortality rates, or a combination of both. On the other end, countries with low scores on PC2 have higher fertility, birth rates (birthr), and a higher birth to death ratio (bdratio), suggesting these are countries with younger populations and potentially higher population growth due to these factors.
+- *Principal Component 1:* This component seems to be associated with general or overall development indicators. High positive scores on PC1 correlate with high GDP, high literacy rates (for both males and females), and higher life expectancy for both males and females. This suggests that countries with higher scores on PC1 are likely to be more developed, with stronger economies and better health and education systems. On the other hand, countries with low scores on PC1 exhibit higher rates of infant mortality (babymort), higher AIDS rates (aidsr), and higher birth rates (birthr). These are typical of less developed countries where healthcare and education systems are weaker and economic activity is lower.
+
+- *Principal Component 2:* This component captures more demographic variables and aspects of population dynamics. Notably, countries with high scores on PC2 have higher death rates (deathr) and possibly lower population increases (popincr), indicating countries that may be experiencing either low birth rates, high mortality rates, or a combination of both. On the other end, countries with low scores on PC2 have higher fertility, birth rates (birthr), and a higher birth to death ratio (bdratio), suggesting these are countries with younger populations and potentially higher population growth due to these factors.
 
 ### d)
 
 ```{r}
 #| label: fig-pca-01
-#| fig-cap: Plot of something
+#| fig-cap: Plot of principal component by region
 
 world_complete = pca_cor |>
   augment(world_complete)
@@ -237,7 +264,7 @@ world_complete |>
   theme_classic()
 ```
 
-Yes, based on @fig-pca-01, there does appear to be an association between the component scores and the region a country belongs to. For instance:
+Based on @fig-pca-01, there does appear to be an association between the component scores and the region a country belongs to. For instance:
 
 -   OECD countries are generally clustered towards higher values on PC1. This suggests that OECD countries, which are typically more economically developed, have higher GDP, literacy rates, and life expectancy, characteristics that are positively correlated with PC1.
 
@@ -256,14 +283,18 @@ Yes, based on @fig-pca-01, there does appear to be an association between the co
 To show that the weight vectors for the first two components are orthogonal, we first need to extract the weight vectors or loadings for the perform analysis:
 
 ```{r}
+#|code-fold: true
 loadings = pca_cov$rotation
 ```
 
 Then we check the dot product for the first two loadings vectors
 
 ```{r}
+#| code-fold: false
 round(sum(loadings[, 1] * loadings[, 2]), 3)
 ```
+
+As expected, this value is $0$, showing that the weight or loadings for the first two components are orthogonal.
 
 # Question 2
 
@@ -294,7 +325,7 @@ Assembly")
 We perform a pca with the correlation matrix
 
 ```{r}
-wais_pc = prcomp(covmat = wais)
+wais_pc = princomp(covmat = wais)
 ```
 
 ```{r}
@@ -303,18 +334,7 @@ wais_pc = prcomp(covmat = wais)
 #| fig-width: 9
 #| fig-height: 5
 
-# wais_pc |> 
-#   tidy(matrix = "eigenvalues") |> 
-#   mutate(lambda = std.dev * std.dev) |> 
-#   ggplot(aes(PC, lambda)) +
-#   geom_col(fill = "#56B4E9", alpha = 0.8) +
-#   geom_abline(slope =  0, intercept = 1, linetype = "dashed", color = "red") +
-#   xlab("PCA") +
-#   scale_x_continuous(breaks = 1:13) +
-#   scale_y_continuous(
-#        expand = expansion(mult = c(0, 0.01))
-#     ) +
-#   theme_minimal_hgrid(12)
+screeplot(wais_pc)
 ```
 
 # Question 3
