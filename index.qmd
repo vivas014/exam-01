@@ -28,6 +28,7 @@ library(ggrepel)
 library(gt)
 library(skimr)
 library(patchwork)
+library(psych)
 library(tidyverse)
 ```
 
@@ -283,7 +284,7 @@ Based on @fig-pca-01, there does appear to be an association between the compone
 To show that the weight vectors for the first two components are orthogonal, we first need to extract the weight vectors or loadings for the perform analysis:
 
 ```{r}
-#|code-fold: true
+#| code-fold: false
 loadings = pca_cov$rotation
 ```
 
@@ -322,11 +323,7 @@ Assembly")
 
 ### a)
 
-We perform a pca with the correlation matrix
-
-```{r}
-wais_pc = princomp(covmat = wais)
-```
+We perform a pca with the correlation matrix and evaluate and identify an appropriate number of principal components with the scree-plot, the Kaiser rule and the proportion of variance explained.
 
 ```{r}
 #| label: fig-scree-plot-02
@@ -334,7 +331,287 @@ wais_pc = princomp(covmat = wais)
 #| fig-width: 9
 #| fig-height: 5
 
-screeplot(wais_pc)
+wais_pc = princomp(covmat = wais)
+
+screeplot(wais_pc); abline(h = 1, col = "red")
 ```
 
+The scree-plot and the Kaiser rule suggests that 2 principal components would be appropriate to describe the variance among the variables. Now we compute the proportion of variance explained by each component.
+
+```{r}
+#| label: tbl-pc-results
+#| tbl-cap: Proportion of variance explained (raw and cummulative) for each principal component (PC)
+
+lambda = wais_pc$sdev^2
+
+v = NULL
+for (i in 1:11) v[i] = lambda[i]/11
+
+tibble(
+  PC = c(1:11),
+  per = round(v*100, 2),
+  cum = round(cumsum(lambda)/11 *100, 2) 
+  ) |> 
+  gt() |>
+  cols_width(
+    per ~ px(120),
+    cum ~ px(120)
+  ) |>
+  cols_label(
+    per = "Percentage",
+    cum = "Cummulative"
+  ) |> 
+  cols_align(
+    columns = -1,
+    align = "center"
+  )
+```
+
+Based on @tbl-pc-results, we see that the first component explained around 35% of the variance, the second and the third component around 10% each. This information doesn't provide much evidence toward the number of principal components to extract. Hence, we rely on the scree-plot and the Kaiser rule. Hence, 2 principal components would be appropriate to describe the variance among the variables. And together, this two components explained about 46% of the variance. 
+
+### b)
+
+```{r}
+#| label: tbl-loadings-cor-02
+#| tbl-cap: Loading of the first two principal components
+
+A = loadings(wais_pc)
+
+loadings=NULL
+for (i in 1:length(lambda)){
+  loadings = cbind(loadings, A[,i]* sqrt(lambda[i]))
+}
+
+tibble(
+  Variable = row.names(loadings),
+  PC1 = loadings[,1],
+  PC2 = loadings[,2]
+) |> 
+  gt()|> 
+  cols_width(
+    everything() ~ px(150)
+  ) |> 
+  cols_align(
+    columns = -1,
+    align = "center"
+  ) |> 
+  fmt_number(
+    columns = 2:3,
+    decimals = 2
+  )
+```
+
+Based on @tbl-loadings-cor-02 we can interpret each principal component as follows:
+
+- *Principal Component 1:* seems to capture general intelligence (or as Spearman would called it the "g" factor) since all the subtests have positive loadings and most of them are strong. This suggests that PC1 might be measuring a general cognitive ability that affects performance across all the subtests.
+
+- *Principal Component 2:* this component distinguishes between subtests that involve verbal comprehension and those that require other skills such as processing speed, nonverbal reasoning, or spatial processing. Subtests like "Information", "Comprehension", and "Vocabulary" have positive loadings, which may represent a 'verbal' dimension. In contrast, tests such as "Block Design", "Picture Completion", and "Object Assembly" have negative loadings, possibly indicating a 'performance' dimension or nonverbal skills.
+
+### c)
+
+```{r}
+#| label: tbl-factor-results
+#| tbl-cap: P-value for four proposed Factor Analysis model
+
+fa_01 = fa(wais, nfactor = 1, n.obs = 230, fm = "ml", rotate = "none")
+fa_02 = fa(wais, nfactor = 2, n.obs = 230, fm = "ml", rotate = "none")
+fa_03 = fa(wais, nfactor = 3, n.obs = 230, fm = "ml", rotate = "none")
+fa_04 = fa(wais, nfactor = 4, n.obs = 230, fm = "ml", rotate = "none")
+
+tibble(
+  Model = str_c(1:4,"-factor"),
+  Pval = c(fa_01$PVAL, fa_02$PVAL, fa_03$PVAL, fa_04$PVAL),
+  TLI = c(fa_01$TLI, fa_02$TLI, fa_03$TLI, fa_04$TLI),
+  RMSEA = c(fa_01$RMSEA[1], fa_02$RMSEA[1], fa_03$RMSEA[1], fa_04$RMSEA[1])
+) |> 
+  gt() |> 
+  fmt_number(
+    columns = 2:4,
+    decimals = 3
+  ) |> 
+  cols_width(
+    everything() ~ px(80)
+  )
+```
+
+```{r}
+#| label: tbl-loadings-fa
+#| tbl-cap: Loading of the first two factors
+
+tibble(
+  Variable = row.names(loadings),
+  FA1 = fa_02$loadings[, 1],
+  FA2 = fa_02$loadings[, 2]
+) |> 
+  gt()|> 
+  cols_width(
+    everything() ~ px(150)
+  ) |> 
+  cols_align(
+    columns = -1,
+    align = "center"
+  ) |> 
+  fmt_number(
+    columns = 2:3,
+    decimals = 2
+  )
+```
+
+Based on @tbl-loadings-fa, we can say the following:
+
+- **Factor 1** seems to represent a broad cognitive ability that might be related to general intelligence, given that it is positively associated with a wide range of subtests, particularly those requiring verbal comprehension, problem-solving, and perceptual organization. This is consistent with the general intelligence ("g") factor framework (once again, our friend Spearman).
+
+- **Factor 2** appears to distinguish between subtests that require visual-spatial processing and manipulation (e.g., Block Design, Object Assembly) which have positive loadings, and subtests that are more verbally oriented (e.g., Vocabulary, Information) which have negative loadings. This suggests that Factor 2 could be capturing a contrast between visual-spatial abilities and verbal abilities.
+
+The PCA results showed that all subtests had positive loadings on PC1, suggesting a single underlying dimension. On PC2, there was a clear distinction between subtests, with those requiring verbal comprehension (e.g., Information, Comprehension, Vocabulary) having positive loadings, and those requiring processing speed or non-verbal reasoning (e.g., Digit Symbol, Picture Completion, Block Design) having negative loadings.
+
+In the factor analysis results:
+
+Factor 1 seems to align with the PC1 from the PCA, where it represents a general intelligence factor given its positive association with a range of subtests.Factor 2 appears to align somewhat with PC2 from the PCA in terms of distinguishing between verbal and non-verbal abilities but with a different pattern of loadings. In the PCA, verbal abilities were positively loaded on PC2, whereas in the factor analysis, some verbal abilities have negative loadings on ML2.
+
+Overall, both PCA and factor analysis results suggest the presence of a general cognitive factor. However, the second component (PC2) and factor highlight different aspects of the underlying structure in the data. PCA provides a purely statistical representation of variance without assuming an underlying model, while factor analysis attempts to uncover latent variables that might explain the observed correlations among the subtests.
+
+### d)
+
+These are the communalities for the Information and Vocabulary subtests given by the model
+
+```{r}
+round(fa_02$communality[c(1,6)], 4)
+```
+
+We can get the same result using the factor loading as follows:
+
+```{r}
+round(c(sum(fa_02$loadings[1,]**2), sum(fa_02$loadings[6,]**2)), 4)
+```
+
+### e) 
+
+Based on the two factor model I computed, the Information and Comprehension subtests (let's rename them $X_1$ and $X_2$, respectively) can be express as follows:
+
+$$
+\begin{align}
+X_1 &= \lambda_{11}f_1+ \lambda_{12}f_2+e_1\\
+X_2 &= \lambda_{21}f_1+ \lambda_{22}f_2+e_2\\
+\end{align}
+$$
+Then, the correlation of this two variables can be compute as:
+
+\begin{align}
+Cov(X_1, X_2) =&  \; Cov(\lambda_{11}f_1+ \lambda_{12}f_2+e_1, \lambda_{21}f_1+ \lambda_{22}f_2+e_2)\\
+
+=& \;Cov(\lambda_{11}f_1, \lambda_{21}f_1) + Cov(\lambda_{11}f_1, \lambda_{22}f_2) + Cov(\lambda_{11}f_1, e_2) \;+ \\
+
+
+\phantom{=}& \; Cov(\lambda_{12}f_2, \lambda_{21}f_1) + Cov(\lambda_{12}f_2, \lambda_{21}f_2) + Cov(\lambda_{12}f_2, e_2) \;+ \\
+
+\phantom{=}& \; Cov(e_1, \lambda_{21}f_1) + Cov(e_1, \lambda_{22}f_2) + Cov(e_1,e_2)
+\end{align}
+
+Using the assumptions of the two-factor model, we can reduce the latter expression into:
+
+$$
+\begin{align}
+Cov(X_1, X_2) &= Cov(\lambda_{11}f_1,\lambda_{21}f_1)+Cov(\lambda_{12}f_2,\lambda_{22}f_2)\\
+&= \lambda_{11}\lambda_{21}Var(f_1) + \lambda_{12}\lambda_{22}Var(f_2)\\
+&= \lambda_{11}\lambda_{21} + \lambda_{12}\lambda_{22}
+\end{align}
+$$
+The estimations of these quantities can be found in the factor loadings:
+```{r}
+#| code-fold: false
+fa_02$loadings[c(1,2),c(1,2)]
+```
+Hence, the fitted covariance (well, actually correlation) will be:
+
+$$
+\begin{align}
+cov(X_1,X_2) &= \hat{\lambda}_{11}\hat{\lambda}_{21} + \hat{\lambda}_{12}\hat{\lambda}_{22}\\
+&= (0.6376020*0.5450952) + (-0.3457973*-0.1819704)\\
+&\approx 0.4104
+\end{align}
+$$
+The observed covariance (correlation) between $X_1$ and $X_2$ is $0.37$. This means that the residual for this correlation approx. will be:
+
+$$
+residual_{X1,X2} \approx 0.3700 - 0.4104 \approx -0.0404
+$$
+Which can be obtain with the residual matrix:
+
+```{r}
+#| code-fold: false
+fa_02$residual[1,2]
+```
+
+This means that the model overestimated the correlation between the Information and Comprehension subtests (it was off by 0.04 units). However, the estimation yielded a plausible result.
+
 # Question 3
+
+### a)
+
+In the one-factor model with three observed variables, the (symmetric) covariance matrix is the following:
+
+$$
+\begin{align}
+\Sigma_{xx} & = \begin{bmatrix}
+\sigma^2_1 &  & \\
+\sigma_1\sigma_2 & \sigma^2_2 & \\
+\sigma_1\sigma_3 & \sigma_2\sigma_3 & \sigma^2_3\\
+\end{bmatrix} = \begin{bmatrix}
+\lambda^2_1 + \psi_1 &  & \\
+\lambda_1\lambda_2 & \lambda^2_2 + \psi_2 & \\
+\lambda_1\lambda_3 & \lambda_2\lambda_3 & \lambda^2_3 + \psi_3\\
+\end{bmatrix}
+\end{align}
+$$
+Which means that we can get estimates for the parameters of the model by solving the following system of equations:
+
+$$
+\begin{equation*}
+  \left\{
+    \begin{aligned}
+      & \lambda^2_1 + \psi_1 = 25\\
+      & \lambda^2_2 + \psi_2 = 15 \\
+      & \lambda^2_3 + \psi_3 = 10 \\
+      & \lambda_1\lambda_2 = 8 \\
+      & \lambda_1\lambda_3 = 7 \\
+      & \lambda_2\lambda_3 = 6 \\
+    \end{aligned}
+  \right.
+\end{equation*}
+$$
+From the forth and fifth equation we have that:
+
+$$
+\lambda_1 = \frac{8}{\lambda_2}; \lambda_3 = \frac{7\lambda_2}{8}
+$$
+
+We can plug-in these results into the sixth equation to get the following:
+
+$$
+\begin{align}
+\lambda_2\lambda_3 &= 6 \\
+\lambda_2 \left ( \frac{7\lambda_2}{8} \right ) &= 6\\
+\lambda_2 = \pm \sqrt{6\left(\frac{7}{8}\right)}
+\end{align}
+$$
+
+For the sake of this question, we would take the positive solution. This implies that:
+
+$$
+\begin{align}
+\hat{\lambda}_1 &= 8\left(\sqrt{6\left(\frac{7}{8}\right)}\right)^{-1}  &  \hat{\lambda}_2 &= \sqrt{6\left(\frac{7}{8}\right)} &  \hat{\lambda}_3 &= \frac{7}{8}\left(\sqrt{6\left(\frac{7}{8}\right)}\right)\\
+\end{align}
+$$
+
+Based on these estimations, we can also get the estimations for the $\psi's$:
+
+$$
+\begin{align}
+\hat{\psi}_1 &= 25- \left[ 8\left(\sqrt{6\left(\frac{7}{8}\right)}\right)^{-1}\right]^2  &  \hat{\psi}_2 &= 15- \left[ \sqrt{6\left(\frac{7}{8}\right)}\right]^2 &  \hat{\psi}_3 &= 10 - \left[ \frac{7}{8}\left(\sqrt{6\left(\frac{7}{8}\right)}\right)\right]^2\\
+\end{align}
+$$
+
+### b)
+
+The problem we would encounter is the overparameterization of the model. Since we have 3 observed variables ($p=3$), the unique pieces of information (or degrees of freedom) available for the estimation of the model parameters is $\frac{p(p+1)}{2} = \frac{3(3+1)}{2} = 6$. However, a two-factor model requires at least $9$ degrees of freedom. This means that the two-factor model cannot be uniquely fitted to the covariance matrix because it does not have enough data points to estimate all the required parameters, aka the model is not identifiable.
