@@ -17,9 +17,11 @@ website:
   navbar:
     left:
       - href: index.qmd
-        text: Solution
-      - href: index.qmd
-        text: Code
+        icon: file-earmark-check
+        text: Answers
+      - href: assets/exam.pdf
+        icon: file-earmark
+        text: Questions
       # - href: index.qmd
       #   text: Page 3
       # - href: index.qmd
@@ -50,7 +52,7 @@ website:
       # - icon: instagram
       #   href: https://instagram.com
       - icon: github
-        href: https://github.com/vivas014/
+        href: https://github.com/vivas014/exam-01
 # footer
   page-footer: 
     border: true

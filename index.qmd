@@ -10,7 +10,13 @@ format:
     code-copy: true
     code-fold: true
     highlight-style: nord
-  docx: default
+  docx:
+    toc: true
+    toc-depth: 3
+    fig-align: center
+    df-print: tibble
+    highlight-style: nord
+    output-file: exam-01-pablo-vivas.docx
 execute:
   warning: false
   error: false
@@ -243,9 +249,9 @@ data_p02 |>
 ```
 Based on @tbl-loadings-cor and its graphical representation in @fig-plot-comparison (right plot) we can interpret each principal component as follows:
 
-- *Principal Component 1:* This component seems to be associated with general or overall development indicators. High positive scores on PC1 correlate with high GDP, high literacy rates (for both males and females), and higher life expectancy for both males and females. This suggests that countries with higher scores on PC1 are likely to be more developed, with stronger economies and better health and education systems. On the other hand, countries with low scores on PC1 exhibit higher rates of infant mortality (babymort), higher AIDS rates (aidsr), and higher birth rates (birthr). These are typical of less developed countries where healthcare and education systems are weaker and economic activity is lower.
+- **Principal Component 1:** This component seems to be associated with general or overall development indicators. High positive scores on PC1 correlate with high GDP, high literacy rates (for both males and females), and higher life expectancy for both males and females. This suggests that countries with higher scores on PC1 are likely to be more developed, with stronger economies and better health and education systems. On the other hand, countries with low scores on PC1 exhibit higher rates of infant mortality (babymort), higher AIDS rates (aidsr), and higher birth rates (birthr). These are typical of less developed countries where healthcare and education systems are weaker and economic activity is lower.
 
-- *Principal Component 2:* This component captures more demographic variables and aspects of population dynamics. Notably, countries with high scores on PC2 have higher death rates (deathr) and possibly lower population increases (popincr), indicating countries that may be experiencing either low birth rates, high mortality rates, or a combination of both. On the other end, countries with low scores on PC2 have higher fertility, birth rates (birthr), and a higher birth to death ratio (bdratio), suggesting these are countries with younger populations and potentially higher population growth due to these factors.
+- **Principal Component 2:** This component captures more demographic variables and aspects of population dynamics. Notably, countries with high scores on PC2 have higher death rates (deathr) and possibly lower population increases (popincr), indicating countries that may be experiencing either low birth rates, high mortality rates, or a combination of both. On the other end, countries with low scores on PC2 have higher fertility, birth rates (birthr), and a higher birth to death ratio (bdratio), suggesting these are countries with younger populations and potentially higher population growth due to these factors.
 
 ### d)
 
@@ -257,8 +263,9 @@ world_complete = pca_cor |>
   augment(world_complete)
 
 world_complete |> 
+  mutate(Region = region) |> 
   ggplot() +
-  geom_point(aes(x = .fittedPC1, y = .fittedPC2, color = region), size = 3) +
+  geom_point(aes(x = .fittedPC1, y = .fittedPC2, color = Region), size = 3) +
   xlab("PC1") +
   ylab("PC2") +
   scale_color_brewer(palette = "Dark2") +
@@ -267,17 +274,17 @@ world_complete |>
 
 Based on @fig-pca-01, there does appear to be an association between the component scores and the region a country belongs to. For instance:
 
--   OECD countries are generally clustered towards higher values on PC1. This suggests that OECD countries, which are typically more economically developed, have higher GDP, literacy rates, and life expectancy, characteristics that are positively correlated with PC1.
+- OECD countries are generally clustered towards higher values on PC1. This suggests that OECD countries, which are typically more economically developed, have higher GDP, literacy rates, and life expectancy, characteristics that are positively correlated with PC1.
 
--   African countries are spread across both PC1 and PC2, but they are generally clustered towards lower PC1 values, indicating lower GDP, literacy rates, and life expectancy. The spread across PC2 might indicate variability in demographic patterns within the region, such as differences in birth and death rates.
+- African countries are spread across both PC1 and PC2, but they are generally clustered towards lower PC1 values, indicating lower GDP, literacy rates, and life expectancy. The spread across PC2 might indicate variability in demographic patterns within the region, such as differences in birth and death rates.
 
--   Latin American, East European, Middle Eastern, and Pacific/Asian countries appear to be intermediate on PC1, which would suggest these regions have varying levels of development. They're not as high as OECD countries but not as low as many African countries.
+- Latin American, East European, Middle Eastern, and Pacific/Asian countries appear to be intermediate on PC1, which would suggest these regions have varying levels of development. They're not as high as OECD countries but not as low as many African countries.
 
--   Latin American countries show a slight trend towards lower values on PC2, which could imply higher birth rates and fertility rates in these countries.
+- Latin American countries show a slight trend towards lower values on PC2, which could imply higher birth rates and fertility rates in these countries.
 
--   East European countries seem to be more variable along PC2, which might reflect a diversity in demographic transitions, possibly due to the varying economic and historical contexts within this region.
+- East European countries seem to be more variable along PC2, which might reflect a diversity in demographic transitions, possibly due to the varying economic and historical contexts within this region.
 
--   Middle Eastern and Pacific/Asian countries are scattered across both components, indicating a wide variety of economic, health, and demographic profiles within these regions.
+- Middle Eastern and Pacific/Asian countries are scattered across both components, indicating a wide variety of economic, health, and demographic profiles within these regions.
 
 ### e)
 
@@ -367,7 +374,11 @@ tibble(
   )
 ```
 
-Based on @tbl-pc-results, we see that the first component explained around 35% of the variance, the second and the third component around 10% each. This information doesn't provide much evidence toward the number of principal components to extract. Hence, we rely on the scree-plot and the Kaiser rule. Hence, 2 principal components would be appropriate to describe the variance among the variables. And together, this two components explained about 46% of the variance. 
+Based on @tbl-pc-results, we see that the first component explained around 34% of the variance, the second and the third component around 11% and 9%, respectively. This information doesn't provide much evidence toward the number of principal components to extract. Hence, we rely on the scree-plot and the Kaiser rule. Therefore, 2 principal components would be appropriate to describe the variance among the variables. And together, this two components explained about 46% of the variance. 
+
+::: callout-note
+The rest of the analysis will be done using two principal components.
+:::
 
 ### b)
 
@@ -403,15 +414,15 @@ tibble(
 
 Based on @tbl-loadings-cor-02 we can interpret each principal component as follows:
 
-- *Principal Component 1:* seems to capture general intelligence (or as Spearman would called it the "g" factor) since all the subtests have positive loadings and most of them are strong. This suggests that PC1 might be measuring a general cognitive ability that affects performance across all the subtests.
+- **Principal Component 1:** seems to capture general intelligence (or as our friend Spearman would called it the "g" factor) since all the subtests have positive loadings and most of them are strong. This suggests that PC1 might be measuring a general cognitive ability that affects performance across all the subtests.
 
-- *Principal Component 2:* this component distinguishes between subtests that involve verbal comprehension and those that require other skills such as processing speed, nonverbal reasoning, or spatial processing. Subtests like "Information", "Comprehension", and "Vocabulary" have positive loadings, which may represent a 'verbal' dimension. In contrast, tests such as "Block Design", "Picture Completion", and "Object Assembly" have negative loadings, possibly indicating a 'performance' dimension or nonverbal skills.
+- **Principal Component 2:** this component distinguishes between subtests that involve verbal comprehension and those that require other skills such as processing speed, nonverbal reasoning, or spatial processing. Subtests like "Information", "Comprehension", and "Vocabulary" have positive loadings, which may represent a 'verbal' dimension. In contrast, tests such as "Block Design", "Picture Completion", and "Object Assembly" have negative loadings, possibly indicating a 'performance' dimension or nonverbal skills.
 
 ### c)
 
 ```{r}
 #| label: tbl-factor-results
-#| tbl-cap: P-value for four proposed Factor Analysis model
+#| tbl-cap: P-value, TLI, RMSEA and  for four proposed Factor Analysis model
 
 fa_01 = fa(wais, nfactor = 1, n.obs = 230, fm = "ml", rotate = "none")
 fa_02 = fa(wais, nfactor = 2, n.obs = 230, fm = "ml", rotate = "none")
@@ -421,7 +432,7 @@ fa_04 = fa(wais, nfactor = 4, n.obs = 230, fm = "ml", rotate = "none")
 tibble(
   Model = str_c(1:4,"-factor"),
   Pval = c(fa_01$PVAL, fa_02$PVAL, fa_03$PVAL, fa_04$PVAL),
-  TLI = c(fa_01$TLI, fa_02$TLI, fa_03$TLI, fa_04$TLI),
+  TLI = c(fa_01$TLI, fa_02$TLI, fa_03$TLI, 1),
   RMSEA = c(fa_01$RMSEA[1], fa_02$RMSEA[1], fa_03$RMSEA[1], fa_04$RMSEA[1])
 ) |> 
   gt() |> 
@@ -433,6 +444,18 @@ tibble(
     everything() ~ px(80)
   )
 ```
+
+Based on @tbl-factor-results we can conclude the following:
+
+- 1-factor model: This model does not appear to fit the data well. The P-value is very low, it could imply that the model significantly differs from the observed data. This is supported by a TLI that is below the acceptable threshold of 0.90 and an RMSEA that is considered high, indicating a poor fit.
+
+- 2-factor model: This model shows significant improvement over the 1-factor model. The P-value is higher, although it's still below 0.05. The TLI is much improved and is above the threshold of 0.90, indicating a good fit. The RMSEA is within the range of what is considered a reasonable error of approximation, suggesting this model fits the data well.
+
+- 3-factor model: This model continues the trend of improved fit. The P-value is well above 0.05, suggesting that the model fits the data closely enough that any differences from the observed data are not statistically significant. The TLI is very close to 1, and the RMSEA is well below 0.05, which indicates a close fit.
+
+- 4-factor model: This model has the best fit according to the indices presented. The P-value is high, which could suggest the model fits the data so well that there's no difference between the model and the observed data, although it could also indicate overfitting. The TLI is perfect, and the RMSEA is 0, which might actually raise suspicions as it suggests a perfect model fit, which is very rare in practice.
+
+Using a parsimonious approach, we can use the 2-factor model because it provides a balance between complexity and goodness of fit.
 
 ```{r}
 #| label: tbl-loadings-fa
@@ -471,17 +494,21 @@ Factor 1 seems to align with the PC1 from the PCA, where it represents a general
 
 Overall, both PCA and factor analysis results suggest the presence of a general cognitive factor. However, the second component (PC2) and factor highlight different aspects of the underlying structure in the data. PCA provides a purely statistical representation of variance without assuming an underlying model, while factor analysis attempts to uncover latent variables that might explain the observed correlations among the subtests.
 
+Also, it is worth mentioning that the results of the factor analysis (in terms of how many factors are needed to explain the intercorrelations) match the conclusion in the PCA analysis. As shown by @fig-scree-plot-02
+
 ### d)
 
 These are the communalities for the Information and Vocabulary subtests given by the model
 
 ```{r}
+#| code-fold: false
 round(fa_02$communality[c(1,6)], 4)
 ```
 
 We can get the same result using the factor loading as follows:
 
 ```{r}
+#| code-fold: false
 round(c(sum(fa_02$loadings[1,]**2), sum(fa_02$loadings[6,]**2)), 4)
 ```
 
