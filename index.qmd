@@ -274,15 +274,13 @@ world_complete |>
 
 Based on @fig-pca-01, there does appear to be an association between the component scores and the region a country belongs to. For instance:
 
-- OECD countries are generally clustered towards higher values on PC1. This suggests that OECD countries, which are typically more economically developed, have higher GDP, literacy rates, and life expectancy, characteristics that are positively correlated with PC1.
+- OECD and East Europe countries are generally clustered towards higher values on PC1. This suggests that these countries, which are typically more economically developed, have higher GDP, literacy rates, and life expectancy, characteristics that are positively correlated with PC1.
 
 - African countries are spread across both PC1 and PC2, but they are generally clustered towards lower PC1 values, indicating lower GDP, literacy rates, and life expectancy. The spread across PC2 might indicate variability in demographic patterns within the region, such as differences in birth and death rates.
 
-- Latin American, East European, Middle Eastern, and Pacific/Asian countries appear to be intermediate on PC1, which would suggest these regions have varying levels of development. They're not as high as OECD countries but not as low as many African countries.
+- Latin American, Middle Eastern, and Pacific/Asian countries appear to be intermediate on PC1, which would suggest these regions have varying levels of development. They're not as high as OECD or East Europe countries but not as low as many African countries.
 
 - Latin American countries show a slight trend towards lower values on PC2, which could imply higher birth rates and fertility rates in these countries.
-
-- East European countries seem to be more variable along PC2, which might reflect a diversity in demographic transitions, possibly due to the varying economic and historical contexts within this region.
 
 - Middle Eastern and Pacific/Asian countries are scattered across both components, indicating a wide variety of economic, health, and demographic profiles within these regions.
 
@@ -619,7 +617,7 @@ $$
 \begin{align}
 \lambda_2\lambda_3 &= 6 \\
 \lambda_2 \left ( \frac{7\lambda_2}{8} \right ) &= 6\\
-\lambda_2 = \pm \sqrt{6\left(\frac{7}{8}\right)}
+\lambda_2 = \pm \sqrt{6\left(\frac{8}{7}\right)}
 \end{align}
 $$
 
@@ -627,7 +625,7 @@ For the sake of this question, we would take the positive solution. This implies
 
 $$
 \begin{align}
-\hat{\lambda}_1 &= 8\left(\sqrt{6\left(\frac{7}{8}\right)}\right)^{-1}  &  \hat{\lambda}_2 &= \sqrt{6\left(\frac{7}{8}\right)} &  \hat{\lambda}_3 &= \frac{7}{8}\left(\sqrt{6\left(\frac{7}{8}\right)}\right)\\
+\hat{\lambda}_1 &= 8\left(\sqrt{6\left(\frac{8}{7}\right)}\right)^{-1}  &  \hat{\lambda}_2 &= \sqrt{6\left(\frac{8}{7}\right)} &  \hat{\lambda}_3 &= \frac{7}{8}\left(\sqrt{6\left(\frac{8}{7}\right)}\right)\\
 \end{align}
 $$
 
@@ -635,7 +633,7 @@ Based on these estimations, we can also get the estimations for the $\psi's$:
 
 $$
 \begin{align}
-\hat{\psi}_1 &= 25- \left[ 8\left(\sqrt{6\left(\frac{7}{8}\right)}\right)^{-1}\right]^2  &  \hat{\psi}_2 &= 15- \left[ \sqrt{6\left(\frac{7}{8}\right)}\right]^2 &  \hat{\psi}_3 &= 10 - \left[ \frac{7}{8}\left(\sqrt{6\left(\frac{7}{8}\right)}\right)\right]^2\\
+\hat{\psi}_1 &= 25- \left[ 8\left(\sqrt{6\left(\frac{8}{7}\right)}\right)^{-1}\right]^2  &  \hat{\psi}_2 &= 15- \left[ \sqrt{6\left(\frac{8}{7}\right)}\right]^2 &  \hat{\psi}_3 &= 10 - \left[ \frac{7}{8}\left(\sqrt{6\left(\frac{8}{7}\right)}\right)\right]^2\\
 \end{align}
 $$
 
